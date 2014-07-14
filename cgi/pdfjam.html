@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head><title>PDFtk and PDFjam Web Interface</title></head>
+<body>
+<form action="/cgi-bin/pdfjamcgi.py" method="post" enctype="multipart/form-data">
+	<p>PDF files with A5 pages:<br>
+	A: <input type="file" name="pdfa"><br>
+	B: <input type="file" name="pdfb"><br>
+	C: <input type="file" name="pdfc"><br>
+	D: <input type="file" name="pdfd"><br>
+	PDFtk line: <input size="30" name="pdftk" value=""><br>
+	<small>hint: A1 B A2 C1W = page 1 of A, then all pages of B, then page 2 of A, and C1 rotated west<br>empty line means simple joining of all files</small><br>
+	<input type="submit"></p>
+</form>
+</body>
+</html>
