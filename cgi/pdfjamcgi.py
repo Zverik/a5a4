@@ -12,17 +12,21 @@ PDFTK = '/usr/bin/pdftk'
 PDFJAM = '/usr/bin/pdfjam'
 PDFTK_NEW = False # set to True for pdftk 1.45+
 
-def close_files(files):
-	for fp in files:
+def remove_files(fp):
+	if type(fp) is list:
+		for fp1 in fp:
+			remove_files(fp1)
+	elif type(fp) is dict:
+		for fp1 in fp.values():
+			remove_files(fp1)
+	elif type(fp) is str:
 		try:
-			if type(fp) is str:
-				os.remove(fp)
-			elif hasattr(fp, 'read') and hasattr(fp, 'name'):
-				os.remove(fp.name)
-			elif type(fp) is list:
-				close_files(fp)
-			elif type(fp) is dict:
-				close_files(fp.values())
+			os.remove(fp)
+		except OSError:
+			pass
+	elif hasattr(fp, 'read') and hasattr(fp, 'name'):
+		try:
+			os.remove(fp.name)
 		except OSError:
 			pass
 
@@ -63,7 +67,7 @@ else:
 	if not len(pages):
 		pages = ' '.join(sorted(pdf.keys()))
 	elif not re.match('^[A-D][1-9A-Z-]*(?: +[A-D][1-9A-Z-]*)*$', pages):
-		close_files(pdf.values())
+		remove_files(pdf)
 		error_die('Incorrect pages format: {}'.format(pages))
 	
 	if PDFTK_NEW:
@@ -85,8 +89,9 @@ else:
 	process = subprocess.Popen(command, stderr=subprocess.PIPE)
 	_, err = process.communicate()
 	result = process.returncode
+	remove_files(pdf)
 	if result != 0 or not os.path.isfile(tmpName) or os.stat(tmpName).st_size == 0:
-		close_files([pdf, tmpName])
+		remove_files(tmpName)
 		error_die('PDFtk returned error code {}\n\n{}'.format(result, err))
 
 # now process result with pdfjam
@@ -95,14 +100,13 @@ command = [PDFJAM, tmpName, '--nup', '2x1', '--landscape', '--a4paper', '--outfi
 process = subprocess.Popen(command, stderr=subprocess.PIPE)
 _, err = process.communicate()
 result = process.returncode
+remove_files(tmpName)
 if result != 0:
-	close_files([pdf, tmpName])
 	error_die('PDFjam returned error code {}\n\n{}'.format(result, err))
 
-os.remove(tmpName)
 length = os.stat(outputName).st_size
 if length == 0:
-	close_files([pdf, outputName])
+	remove_files(outputName)
 	error_die('Resulting PDF is empty for some reason')
 
 print 'Content-Type: application/pdf'
@@ -112,4 +116,4 @@ print ''
 with open(outputName, 'rb') as f:
 	shutil.copyfileobj(f, sys.stdout)
 
-close_files([pdf, outputName])
+remove_files(outputName)
