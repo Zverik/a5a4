@@ -1,0 +1,53 @@
+body { font-family: "PT Sans", sans-serif; }
+#newproject {
+	font-size: 8pt;
+	margin-top: 50px;
+}
+#pages {
+	max-width: 450px;
+	float: left;
+
+}
+
+.page {
+	position: relative;
+	display: inline-block;
+}
+
+.pagelabel {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+	font-size: 8pt;
+	background: black;
+	color: white;
+	opacity: 0.6;
+	font-weight: bold;
+	padding: 0 2px;
+	border-radius: 3px;
+	z-index: 100;
+}
+
+.controls {
+	position: absolute;
+	background-color: rgba(255, 255, 255, 0.8);
+	left: 50px;
+	bottom: 5px;
+}
+.controls a {
+	display: inline-block;
+	text-decoration: none;
+	font-weight: bold;
+	color: blue;
+	padding: 0px 3px;
+}
+.rotate {
+	-webkit-transform: rotate(180deg);
+	-moz-transform: rotate(180deg);
+	-o-transform: rotate(180deg);
+	-ms-transform: rotate(180deg);
+	transform: rotate(180deg);
+}
+#pgstatus {
+	color: gray;
+}

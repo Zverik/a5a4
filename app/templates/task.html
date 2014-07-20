@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Task {{ taskid }} — {% endblock %}
+{% block content %}
+{% if error %}<p style="color: red;">{{ error }}</p>{% endif %}
+<div id="pages">
+	{% for page in pages %}
+	<div class="page" page="{{ page }}">
+		<span class="pagelabel">{{ page[:2] }}</span>
+		<img src="{{ url_for('getpng', taskid=taskid, img=page) }}" {% if page.endswith('R') or page.endswith('D') %}class="rotate"{% endif %}>
+		<span class="controls">
+			<a href="#" onclick="return pg(this, 'left');" title="move left">←</a>
+			<a href="#" onclick="return pg(this, 'add');" title="duplicate">+</a>
+			<a href="#" onclick="return pg(this, 'delete');" title="delete">×</a>
+			<a href="#" onclick="return pg(this, 'rotate');" title="turn upside down">¿</a>
+			<a href="#" onclick="return pg(this, 'right');" title="move right">→</a>
+		</span>
+	</div>
+	{% endfor %}
+</div>
+<div id="files">
+	{% for letter, pdf in files|dictsort %}
+	<div class="pdf">{{ letter }}: {{ pdf.name }} <a href="{{ url_for('delpdf', taskid=taskid, name=letter) }}">x</a> <a href="{{ url_for('restorepg', taskid=taskid, name=letter) }}">restore</a></div>
+	{% endfor %}
+</div>
+<form action="{{ url_for('upload', taskid=taskid) }}" method="post" enctype="multipart/form-data">
+	<p><input type="file" name="pdf"> <input type="submit" value="Upload"></p>
+</form>
+<div id="generate">
+	<a href="{{ url_for('generate', taskid=taskid) }}">Generate PDF</a>
+</div>
+<div id="pgstatus">&nbsp;</div>
+<div id="newproject">
+	<a href="{{ url_for('index') }}">Start new project</a>
+</div>
+<script type="text/javascript">
+window.uploadRoot = {{ url_for('task_update', taskid=taskid) |tojson |safe }};
+</script>
+{% endblock %}

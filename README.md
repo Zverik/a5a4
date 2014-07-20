@@ -15,6 +15,12 @@ The simplest is the CGI interface. It consists of a plain HTML file to be placed
 anywhere in a document root and of python CGI script for `/cgi-bin` directory.
 Check paths to pdftk and pdfjam in the script — and you're ready to go.
 
+### Flask application
+
+The web application allows for visualizing PDF pages, using raster images as pages,
+rearranging and rotating them visually, and producing PDF with pdftk + pdfjam.
+Run `run.py` and open `http://localhost:5000` to use it.
+
 ## Author and license
 
 The script was written by Ilya Zverev and published under WTFPL license.
