@@ -1,0 +1,3 @@
+#app/config.py
+app/*.pyc
+app/tasks/
