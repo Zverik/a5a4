@@ -18,13 +18,13 @@ def login():
 	return redirect(url_for('index'))
 
 @app.route('/<taskid>')
-def task(taskid):
+def task(taskid, error=None):
 	if 'logged_in' not in session or not session['logged_in']:
 		return render_template('login.html')
 	task = tasks.get(taskid)
 	if not task:
 		return redirect(url_for('index'))
-	return render_template('task.html', taskid=taskid, pages=task.pages, files=task.files)
+	return render_template('task.html', taskid=taskid, pages=task.pages, files=task.files, error=error)
 
 @app.route('/<taskid>/update')
 def task_update(taskid):
@@ -45,15 +45,13 @@ def upload(taskid=None):
 	pdf = request.files['pdf']
 	if not pdf:
 		return render_template('upload.html')
+	newtask = not taskid
 	if not taskid:
 		taskid = tasks.create()
 	result = tasks.addpdf(taskid, pdf)
-	if not result:
-		if taskid:
-			return redirect(url_for('task', taskid=taskid))
-		else:
-			return render_template('upload.html', error='PDF processing failed')
-	return redirect(url_for('task', taskid=taskid))
+	if result and newtask:
+		return render_template('upload.html', error=result)
+	return redirect(url_for('task', taskid=taskid, error=result))
 
 @app.route('/<taskid>/<img>.png')
 def getpng(taskid, img):

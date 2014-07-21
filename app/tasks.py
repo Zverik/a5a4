@@ -55,7 +55,7 @@ def get(taskid):
 		return None
 	task = Task()
 	with open(filename, 'r') as f:
-		task.pages = f.readline().strip().split(' ')
+		task.pages = [p for p in f.readline().strip().split(' ') if len(p)]
 		for pdf in f.readlines():
 			data = pdf.strip().split(',', 2)
 			if len(data) == 3 and len(data[0]) == 1:
@@ -99,7 +99,6 @@ def restore_pages(taskid, pdf):
 		foundmax = False
 		pos = 0
 		while len(torestore) > 0 and pos < len(task.pages):
-			app.logger.debug('{} {} {}'.format(task.pages[pos][0], int(task.pages[pos][1]), torestore[0]))
 			if task.pages[pos][0] == pdf:
 				curpg = int(task.pages[pos][1])
 				while len(torestore) > 0 and curpg > torestore[0]:
@@ -122,16 +121,19 @@ def restore_pages(taskid, pdf):
 		store_pages(taskid, task.pages)
 
 def addpdf(taskid, pdf):
-	"""Uploads a pdf / png file, converting it and stuff. Pdf is a flask uploaded file."""
+	"""Uploads a pdf / png file, converting it and stuff. Pdf is a flask uploaded file. Return error string or None if it's ok."""
 	task = get(taskid)
 	if not task or len(task.files) >= app.config['A5A4_MAXFILES']:
-		return False
+		return 'You can have no more than {} files'.format(app.config['A5A4_MAXFILES'])
 	if not len(task.files):
 		letter = 'A'
 	else:
 		letter = chr(ord(sorted(task.files.keys(), reverse=True)[0]) + 1)
 		if letter > 'Z':
-			return False
+			letter = 'A'
+			# this won't overflow because of maxfiles (which should be less than 26)
+			while letter in task.files.keys():
+				letter = chr(ord(letter) + 1)
 	filename = taskfile(taskid, letter + '.pdf')
 	pdf.save(filename)
 
@@ -141,19 +143,17 @@ def addpdf(taskid, pdf):
 	out, _ = process.communicate()
 	code = process.returncode
 	if code != 0 or not out:
-		#os.remove(filename)
-		app.logger.error('identify failed: {}'.format(code))
-		return False
+		os.remove(filename)
+		return 'Identify failed: {}'.format(code)
 
 	# check page dimensions
 	# get page rotation
 	# get number of pages
 	pages = []
 	for line in out.split('\n'):
-		app.logger.info('Processing {}'.format(line))
+		app.logger.debug('Processing {}'.format(line))
 		m = re.search(filename + r'(?:\[\d+\])? ([A-Z]{3,4}) (\d+)x(\d+)', line)
 		if m:
-			app.logger.info('Regexp ok')
 			fmt = m.group(1)
 			width = int(m.group(2))
 			height = int(m.group(3))
@@ -163,31 +163,27 @@ def addpdf(taskid, pdf):
 			png = fmt != 'PDF'
 			if not png and (abs(width - 420) > 4 or abs(height - 595) > 4):
 				os.remove(filename)
-				app.logger.error('Provided PDF is not in A5 format')
-				return False
+				return 'Provided PDF is not in A5 format'
 			pages.append(landscape)
 
 	if len(pages) == 0:
 		os.remove(filename)
-		app.logger.error('No pages parsed from identify')
-		return False
+		return 'No pages parsed from identify'
 
 	if reduce(lambda c, t: c + t.pages, task.files.values(), len(pages)) > app.config['A5A4_MAXPAGES']:
-		app.logger.error('too many pages: {}'.format(len(pages)))
 		os.remove(filename)
-		return False
+		return 'Too many pages: {} (maximum is {})'.format(len(pages), app.config['A5A4_MAXPAGES'])
 
 	# check if source is png
 	if png:
-		app.logger.info('converting to png')
+		app.logger.debug('converting to png')
 		# convert to pdf
 		tmpfile, tmpName = tempfile.mkstemp(suffix='.pdf')
 		command = [app.config['CONVERT'], filename, '-bordercolor', 'white', '-border', '6%', '-rotate', '-90>', tmpName]
 		result = subprocess.call(command)
 		os.remove(filename)
 		if result != 0:
-			app.logger.error('convert failed: {}'.format(result))
-			return False
+			return 'Convert to PNG failed: {}'.format(result)
 		pages = [False for i in pages]
 		# resize pdf to A5
 		command = [app.config['PDFJAM'], '--a5paper', '--no-landscape', '--outfile', filename, tmpName]
@@ -195,16 +191,14 @@ def addpdf(taskid, pdf):
 		os.remove(tmpName)
 		if result != 0:
 			os.remove(filename)
-			app.logger.error('pdfjam on png failed: {}'.format(result))
-			return False
+			return 'Scaling PNG pdf with pdfjam failed: {}'.format(result)
 
 	# generate slides
 	command = [app.config['CONVERT'], '-density', '200', filename, '-alpha', 'opaque', '-resize', '200x200^', taskfile(taskid, letter + '%d.png')]
 	result = subprocess.call(command)
 	if result != 0:
 		os.remove(filename)
-		app.logger.error('convert to png pages failed: {}'.format(result));
-		return False
+		return 'Creating png pages from pdf failed: {}'.format(result)
 
 	# rotate landscape images
 	for i in xrange(len(pages)):
@@ -219,7 +213,7 @@ def addpdf(taskid, pdf):
 	# construct TaskFile object and store it
 	task.files[letter] = TaskFile(pages, pdf.filename)
 	store(taskid, task)
-	return True
+	return None
 
 def delpdf(taskid, idx):
 	"""Deletes a PDF file, all png miniatures and all of its pages."""
