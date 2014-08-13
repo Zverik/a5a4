@@ -6,8 +6,9 @@ FILENAME = 'task'
 RESULT = 'a5a4.pdf'
 
 class Task:
-	pages = [] # list of transformations: 'A1', 'B2L' etc.
-	files = {} # dict of 'A': TaskFile()
+	def __init__(self):
+		self.pages = [] # list of transformations: 'A1', 'B2L' etc.
+		self.files = {} # dict of 'A': TaskFile()
 
 class TaskFile:
 	def __init__(self, pages, name):
