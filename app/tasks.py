@@ -254,7 +254,8 @@ def generate(taskid):
 
 	tmpfile, tmpName = tempfile.mkstemp(suffix='.pdf')
 	command = [app.config['PDFTK']]
-	command.extend(['{}={}'.format(k, taskfile(taskid, '{}.pdf'.format(k))) for k in task.files])
+	# this line leaves only those documents mentioned in pages
+	command.extend(['{}={}'.format(k, taskfile(taskid, '{}.pdf'.format(k))) for k in set([page[0:1] for page in task.pages]) if k in task.files])
 	command.append('cat')
 	command.extend(task.pages)
 	command.extend(['output', tmpName])
