@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <form action="{{ url_for('login') }}" method="post">
+	<input type="hidden" name="taskid" value="{{ taskid }}">
 	<p>Password: <input type="password" name="password" value=""> <input type="submit"></p>
 </form>
 {% endblock %}

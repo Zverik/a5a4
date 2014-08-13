@@ -15,12 +15,14 @@ def index():
 def login():
 	if 'A5A4_PASSWORD' not in app.config or request.form['password'] == app.config['A5A4_PASSWORD']:
 		session['logged_in'] = True
+		if len(request.form['taskid']) > 1:
+			return redirect(url_for('task', taskid=request.form['taskid']))
 	return redirect(url_for('index'))
 
 @app.route('/<taskid>')
 def task(taskid, error=None):
 	if 'logged_in' not in session or not session['logged_in']:
-		return render_template('login.html')
+		return render_template('login.html', taskid=taskid)
 	task = tasks.get(taskid)
 	if not task:
 		return redirect(url_for('index'))
