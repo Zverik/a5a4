@@ -36,7 +36,7 @@ class TaskFile:
 
 def taskfile(taskid, name=''):
     """Get absolute file name for a file inside a task folder."""
-    if 'A5A4_TASKS' not in app.config:
+    if not app.config.get('A5A4_TASKS'):
         folder = os.path.join(app.config['BASE_DIR'], 'tasks')
     else:
         folder = app.config['A5A4_TASKS']

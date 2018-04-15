@@ -16,7 +16,7 @@ PDFTK_NEW = False  # True for 1.45+
 PDFJAM = '/usr/bin/pdfjam'
 
 # Fill these in config_local.py
-A5A4_TASKS = '/var/lib/a5a4'
+A5A4_TASKS = ''
 A5A4_PASSWORD = ''
 SECRET_KEY = 'whatever'
 
