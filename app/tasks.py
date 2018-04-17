@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import random
 import string
+from functools import reduce
 from app import app
 
 FILENAME = 'task'
