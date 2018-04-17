@@ -167,7 +167,7 @@ def addpdf(taskid, pdf):
     # get page rotation
     # get number of pages
     pages = []
-    for line in out.split('\n'):
+    for line in out.decode('utf-8').split('\n'):
         app.logger.debug('Processing {}'.format(line))
         m = re.search(filename + r'(?:\[\d+\])? ([A-Z]{3,4}) (\d+)x(\d+)', line)
         if m:
@@ -291,7 +291,7 @@ def generate(taskid):
     _, err = process.communicate()
     result = process.returncode
     if result != 0 or not os.path.isfile(tmpName) or os.stat(tmpName).st_size == 0:
-        app.logger.error('PDFtk returned error code {}\n\n{}'.format(result, err))
+        app.logger.error('PDFtk returned error code {}\n\n{}'.format(result, err.decode('utf-8')))
     else:
         # now process result with pdfjam
         command = [app.config['PDFJAM'], tmpName,
@@ -301,7 +301,8 @@ def generate(taskid):
         _, err = process.communicate()
         result = process.returncode
         if result != 0:
-            app.logger.error('PDFjam returned error code {}\n\n{}'.format(result, err))
+            app.logger.error('PDFjam returned error code {}\n\n{}'.format(
+                result, err.decode('utf-8')))
 
     try:
         os.remove(tmpName)
