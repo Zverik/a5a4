@@ -24,7 +24,7 @@ class TaskFile:
         elif type(pages) is list:
             self.orient = pages
         elif type(pages) is int:
-            self.orient = [False for p in xrange(pages)]
+            self.orient = [False for p in range(pages)]
         else:
             raise Exception('Incorrect pages value: {}'.format(pages))
         self.pages = len(self.orient)
@@ -51,7 +51,7 @@ def create():
     """Create new task with random id, initialize its task file."""
     found = False
     while not found:
-        taskid = ''.join(random.choice(string.lowercase) for i in xrange(3))
+        taskid = ''.join(random.choice(string.lowercase) for i in range(3))
         found = not os.path.isfile(taskfile(taskid, FILENAME))
     os.makedirs(taskfile(taskid))
     store(taskid, Task())
@@ -223,7 +223,7 @@ def addpdf(taskid, pdf):
         return 'Creating png pages from pdf failed: {}'.format(result)
 
     # rotate landscape images
-    for i in xrange(len(pages)):
+    for i in range(len(pages)):
         task.pages.append('{}{}{}'.format(letter, i+1, 'L' if pages[i] else ''))
         if pages[i]:
             pagename = taskfile(taskid, letter + str(i) + '.png')
@@ -250,7 +250,7 @@ def delpdf(taskid, idx):
     except OSError:
         app.logger.warn('Failed to delete {}/{}'.format(taskid, pdf.name))
     # delete pngs
-    for i in xrange(pdf.pages):
+    for i in range(pdf.pages):
         try:
             os.remove(taskfile(taskid, '{}{}.png'.format(idx, i)))
         except OSError:

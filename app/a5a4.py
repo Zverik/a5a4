@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from app import app
 import re
-from flask import Flask, render_template, send_file, request, session, url_for, redirect
+from flask import render_template, send_file, request, session, url_for, redirect
 import app.tasks as tasks
 
 
