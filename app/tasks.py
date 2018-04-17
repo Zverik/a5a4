@@ -51,7 +51,7 @@ def create():
     """Create new task with random id, initialize its task file."""
     found = False
     while not found:
-        taskid = ''.join(random.choice(string.lowercase) for i in range(3))
+        taskid = ''.join(random.choice(string.ascii_lowercase) for i in range(3))
         found = not os.path.isfile(taskfile(taskid, FILENAME))
     os.makedirs(taskfile(taskid))
     store(taskid, Task())
